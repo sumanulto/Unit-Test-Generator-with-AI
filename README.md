@@ -104,8 +104,8 @@ OLLAMA_MODEL=codellama                          # Example local model name
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/test-optimization-ai.git
-cd test-optimization-ai
+git https://github.com/sumanulto/Unit-Test-Generator-with-AI.git
+cd Unit-Test-Generator-with-AI
 
 # Install dependencies
 npm install

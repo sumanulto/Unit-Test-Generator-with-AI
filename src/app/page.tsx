@@ -9,7 +9,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from '@/components/ui/card';
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -21,10 +21,12 @@ import {
   Wrench,
   Target,
   ClipboardCopy,
-} from "lucide-react";
+} from 'lucide-react';
+import { Moon, Sun } from 'lucide-react';
 
 import { generateInitialTests } from "@/ai/flows/generate-initial-tests";
 import { refineGeneratedTests } from "@/ai/flows/refine-generated-tests";
+import { useTheme } from "next-themes";
 import { resolveBuildIssues } from "@/ai/flows/resolve-build-issues";
 import { optimizeTestCoverage } from "@/ai/flows/optimize-test-coverage";
 
@@ -90,8 +92,8 @@ export default function Home() {
   const [buildLogs, setBuildLogs] = useState("");
   const [coverageReport, setCoverageReport] = useState("");
   const [aiAnalysisOutput, setAiAnalysisOutput] = useState("");
-  const [isLoading, setIsLoading] = useState<{ [key: string]: boolean }>({});
   const [activeTab, setActiveTab] = useState("ai-analysis");
+  const { theme, setTheme } = useTheme();
   const [currentStage, setCurrentStage] = useState<"initial" | "generated">("initial");
 
   const { toast } = useToast();
@@ -110,7 +112,6 @@ export default function Home() {
     successMessage: string,
     errorMessage: string
   ) => {
-    setIsLoading(prev => ({ ...prev, [operationName]: true }));
     try {
       const result = await operation();
       setCurrentStage("generated");
@@ -119,8 +120,6 @@ export default function Home() {
     } catch (error) {
       console.error(error);
       toast({ variant: "destructive", title: "Error", description: errorMessage });
-    } finally {
-      setIsLoading(prev => ({ ...prev, [operationName]: false }));
     }
   };
 
@@ -128,7 +127,7 @@ export default function Home() {
     const result = await handleAiOperation(
       () => generateInitialTests({ cppCode, yamlInstructions, testsFolderName: 'tests' }),
       'generate',
-      'Initial tests generated successfully.',
+      'Initial tests generated successfully!',
       'Failed to generate initial tests.'
     );
     if (result) {
@@ -137,12 +136,12 @@ export default function Home() {
       setActiveTab("ai-analysis");
     }
   };
-  
+
   const handleRefine = async () => {
     const result = await handleAiOperation(
       () => refineGeneratedTests({ cppCode, generatedTests, yamlConfig: yamlInstructions, buildLogs }),
       'refine',
-      'Tests refined successfully.',
+      'Tests refined successfully!',
       'Failed to refine tests.'
     );
     if (result) {
@@ -151,12 +150,12 @@ export default function Home() {
       setActiveTab("ai-analysis");
     }
   };
-  
+
   const handleFixBuild = async () => {
     const result = await handleAiOperation(
       () => resolveBuildIssues({ cppCode: generatedTests, buildLogs, yamlGuidelines: yamlInstructions }),
       'fix',
-      'Build issues fixed successfully.',
+      'Build issues fixed successfully!',
       'Failed to fix build issues.'
     );
     if (result) {
@@ -165,12 +164,12 @@ export default function Home() {
       setActiveTab("ai-analysis");
     }
   };
-  
+
   const handleOptimize = async () => {
     const result = await handleAiOperation(
       () => optimizeTestCoverage({ cppCode, coverageReport, yamlInstructions }),
       'optimize',
-      'Test coverage optimized successfully.',
+      'Test coverage optimized successfully!',
       'Failed to optimize test coverage.'
     );
     if (result) {
@@ -186,7 +185,7 @@ export default function Home() {
       <header className="py-6 px-4 md:px-8 border-b shadow-sm">
         <div className="container mx-auto">
           <h1 className="text-3xl font-bold font-headline text-primary">
-            C++ Unit Test Alchemist
+            C++ Unit Test with AI
           </h1>
           <p className="text-muted-foreground mt-1">
             Generate, refine, and optimize C++ unit tests with the power of AI.
@@ -232,12 +231,8 @@ export default function Home() {
                 </div>
               </CardContent>
               <CardFooter>
-                <Button onClick={handleGenerate} disabled={isLoading['generate'] || !cppCode || !yamlInstructions} size="lg">
-                  {isLoading['generate'] ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <Sparkles className="mr-2 h-4 w-4" />
-                  )}
+                <Button onClick={handleGenerate} disabled={!cppCode || !yamlInstructions} size="lg">
+                  <Sparkles className="mr-2 h-4 w-4" />
                   Generate Initial Tests
                 </Button>
               </CardFooter>
@@ -252,16 +247,16 @@ export default function Home() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <Button onClick={handleRefine} disabled={isLoading['refine'] || currentStage === 'initial'} variant="secondary">
-                  {isLoading['refine'] ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <TestTube2 className="mr-2 h-4 w-4" />}
+                <Button onClick={handleRefine} disabled={currentStage === 'initial'} variant="secondary">
+                  <TestTube2 className="mr-2 h-4 w-4" />
                   Refine Tests
                 </Button>
-                <Button onClick={handleFixBuild} disabled={isLoading['fix'] || currentStage === 'initial' || !buildLogs} variant="destructive">
-                  {isLoading['fix'] ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wrench className="mr-2 h-4 w-4" />}
+                <Button onClick={handleFixBuild} disabled={currentStage === 'initial' || !buildLogs} variant="destructive">
+                  <Wrench className="mr-2 h-4 w-4" />
                   Fix Build
                 </Button>
-                <Button onClick={handleOptimize} disabled={isLoading['optimize'] || currentStage === 'initial' || !coverageReport} className="bg-accent text-accent-foreground hover:bg-accent/90">
-                  {isLoading['optimize'] ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Target className="mr-2 h-4 w-4" />}
+                <Button onClick={handleOptimize} disabled={currentStage === 'initial' || !coverageReport} className="bg-accent text-accent-foreground hover:bg-accent/90">
+                  <Target className="mr-2 h-4 w-4" />
                   Optimize
                 </Button>
               </CardContent>
@@ -307,7 +302,7 @@ export default function Home() {
                     <TabsTrigger value="ai-analysis">AI Analysis</TabsTrigger>
                   </TabsList>
                   <TabsContent value="build-logs" className="mt-4">
-                     <Textarea
+                    <Textarea
                       placeholder="Paste build logs here to enable the 'Fix Build' feature."
                       value={buildLogs}
                       onChange={(e) => setBuildLogs(e.target.value)}
@@ -315,7 +310,7 @@ export default function Home() {
                     />
                   </TabsContent>
                   <TabsContent value="coverage" className="mt-4">
-                     <Textarea
+                    <Textarea
                       placeholder="Paste your coverage report to enable the 'Optimize' feature."
                       value={coverageReport}
                       onChange={(e) => setCoverageReport(e.target.value)}
@@ -333,6 +328,28 @@ export default function Home() {
           </div>
         </div>
       </main>
+
+      <div className="fixed bottom-4 right-4">
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+        >
+          <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+          <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+          <span className="sr-only">Toggle theme</span>
+        </Button>
+      </div>
+
+      <footer className="py-4 text-center text-muted-foreground text-sm border-t mt-8">
+        <div className="container mx-auto">
+          <p className="text">
+            <strong>C++ AI Test Generator | With ❤️ by</strong> <a href="https://suman.kraftamine.com/" target="_blank" rel="noopener noreferrer" className="font-bold text-blue-600 dark:text-blue-400">SumanUlto</a>
+          </p>
+        </div>
+      </footer>
+
     </div>
   );
 }
+
